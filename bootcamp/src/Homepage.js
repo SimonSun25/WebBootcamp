@@ -1,13 +1,43 @@
 import React from 'react';
+
+import { firebaseConnect, isLoaded } from 'react-redux-firebase';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
+
 import { Link } from 'react-router-dom';
 
-const Homepage = () => (
-  <div>
-    <h2>Homepage</h2>
-    <Link to="/viewer">Card Viewer</Link>
-    <br />
-    <Link to="/editor">Card Editor</Link>
-  </div>
-);
 
-export default Homepage;
+const fixMap = state => {
+  return { homepage: state.firebase.data.homepage };
+};
+
+const Homepage = props => {
+  if (!isLoaded(props.homepage)) {
+    return <div>Loading...</div>;
+  }
+
+  const decks = Object.keys(props.homepage).map(deckId => {
+    return (
+      <div key={deckId}>
+        <Link to={`/viewer/${deckId}`}>{props.homepage[deckId].name}</Link>
+      </div>
+    );
+  });
+
+  return (
+    <div>
+      <h2>Homepage</h2>
+      <Link to="/editor">New deck</Link>
+      <h3>Flashcards</h3>
+      {decks}
+    </div>
+  );
+};
+
+
+
+
+export default compose(
+  firebaseConnect(['/homepage']),
+  connect(fixMap),
+)(Homepage);
